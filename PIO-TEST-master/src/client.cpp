@@ -143,7 +143,7 @@ close_valve();
   USE_SERIAL.println(WiFi.localIP());
    WiFi.setAutoReconnect(true);// if (Wifi.isConnected()..setA)
   http.setReuse(true);
-  wifi_config_ap();
+
 }
 
 
@@ -162,6 +162,7 @@ void wifi_config_ap() {
 
 }
 void loop() {
+      wifi_config_ap();
 switch_pin_state = digitalRead(SWITCH_PIN);
 	ArduinoOTA.handle();
 ping_time = sonar.ping_median(5);
