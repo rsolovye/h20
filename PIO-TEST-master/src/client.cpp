@@ -81,7 +81,7 @@ void setup() {
   USE_SERIAL.println();
   USE_SERIAL.println();
   USE_SERIAL.println();
-
+       wifi_config_ap();
  // WiFi.mode(WIFI_AP_STA);
 
  // WiFi.begin("soyuz", "89626866191");
@@ -188,7 +188,7 @@ void wifi_config_ap() {
   //if it does not connect it starts an access point with the specified name
   //here  "AutoConnectAP" with password "password"
   //and goes into a blocking loop awaiting configuration
-  if (!wifiManager.autoConnect("zavod_h2o", "")){}
+  if (!wifiManager.autoConnect("zavod_h2o", "")){
   Serial.println("failed to connect, we should reset as see if it connects");
     delay(3000);
     ESP.reset();
@@ -198,7 +198,7 @@ void wifi_config_ap() {
 
 }
 void loop() {
-         wifi_config_ap();
+  
 switch_pin_state = digitalRead(SWITCH_PIN);
 	ArduinoOTA.handle();
 ping_time = sonar.ping_median(5);
