@@ -198,23 +198,23 @@ void wifi_config_ap() {
 
 }
 void loop() {
-  
+  	ArduinoOTA.handle();
 switch_pin_state = digitalRead(SWITCH_PIN);
-	ArduinoOTA.handle();
+
 ping_time = sonar.ping_median(5);
 distance_cm = sonar.convert_cm(ping_time);
 percent_full = map(distance_cm, EMPTY_TANK_DISTANCE, FULL_TANK_DISTANCE, 0.0, 100.0);
-delta = abs(value-percent_full);
-value = distance_cm; 
+delta = abs(value-distance_cm);
+//value = percent_full; 
 
  // int new_value = 100*(EMPTY_TANK_DISTANCE-FULL_TANK_DISTANCE-sonar.convert_cm(sonar.ping_median(5,EMPTY_TANK_DISTANCE)))/MAX_DISTANCE;
-//if (distance_cm){
-//    value = percent_full;
-//  printToTelnet();
-  //  printToTelnet(values_toString());
-    //USE_SERIAL.println(value);
-//    report_water_level();
-//}
+if (distance_cm>10){
+    value = distance_cm;
+  printToTelnet();
+  //  printToTelnet(values_toString())
+  //USE_SERIAL.println(value);
+    report_water_level();
+}
 
 
 if (distance_cm <= CM_OFF){
@@ -354,11 +354,14 @@ void printToTelnet(){
  
   
 long ddm = ping_time;//distance_cm;//sonar.ping_median(5, MAX_DISTANCE);
-g+= ddm; 
-g+= " = ";
+g+= "echo_time: ";
+g+=ddm; 
+g+= "  distance_cm: ";
  g+= distance_cm;
-g+= " - ";
+g+= " switch_pin_state: ";
 g+= switch_pin_state;
+g+= " value: ";
+g+= value;
  g+="\n";
 
        //String g = host_souyuz;
