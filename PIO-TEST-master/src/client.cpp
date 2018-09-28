@@ -70,7 +70,7 @@ void setup() {
   delay(500);
   pinMode(SWITCH_PIN, INPUT);
     //Local intialization. Once its business is done, there is no need to keep it around
-   
+   wifi_config_ap();
 
   TelnetServer.begin();
      TelnetServer.setNoDelay(true);
