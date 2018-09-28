@@ -183,7 +183,7 @@ void wifi_config_ap() {
   
  // wifiManager.setSTAStaticIPConfig(_ip, _gw, _sn);
 wifiManager.startConfigPortal();
-
+wifiManager.autoConnect();
   //tries to connect to last known settings
   //if it does not connect it starts an access point with the specified name
   //here  "AutoConnectAP" with password "password"
