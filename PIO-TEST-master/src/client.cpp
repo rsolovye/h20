@@ -159,7 +159,7 @@ void wifi_config_ap() {
     //useful to make it all retry or go to sleep
     //in seconds
    // wifiManager.setTimeout(120);
-       wifiManager.autoConnect("AutoConnectAP"      );
+       wifiManager.startConfigPortal();
 
 }
 void loop() {
