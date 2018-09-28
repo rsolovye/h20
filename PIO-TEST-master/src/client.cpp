@@ -70,12 +70,10 @@ void setup() {
     //Local intialization. Once its business is done, there is no need to keep it around
     WiFiManager wifiManager;
 
-    //reset settings - for testing
+    //reset settings - for testingS
     //wifiManager.resetSettings();
 
-    //sets timeout until configuration portal gets turned off
-    //useful to make it all retry or go to sleep
-    //in seconds
+  
     wifiManager.setTimeout(120);
 
   TelnetServer.begin();
@@ -88,7 +86,7 @@ void setup() {
   USE_SERIAL.println();
   USE_SERIAL.println();
 
-  WiFi.mode(WIFI_STA);
+  WiFi.mode(WIFI_STA_AP);
    
   WiFi.begin("soyuz", "89626866191");
  
