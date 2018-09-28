@@ -158,7 +158,8 @@ void wifi_config_ap() {
     //sets timeout until configuration portal gets turned off
     //useful to make it all retry or go to sleep
     //in seconds
-    wifiManager.setTimeout(120);
+   // wifiManager.setTimeout(120);
+       wifiManager.autoConnect("AutoConnectAP"      );
 
 }
 void loop() {
