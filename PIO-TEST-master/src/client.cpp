@@ -55,6 +55,7 @@ HTTPClient http;
 const uint16_t aport = 23;
 WiFiServer TelnetServer(aport);
 WiFiClient Telnet;
+   WiFiManager wifiManager;
 
 String last_payload = "";
 void report_water_level();
@@ -80,9 +81,9 @@ void setup() {
   USE_SERIAL.println();
   USE_SERIAL.println();
 
-  WiFi.mode(WIFI_AP_STA);
-   
-  WiFi.begin("soyuz", "89626866191");
+ // WiFi.mode(WIFI_AP_STA);
+     wifi_config_ap();
+ // WiFi.begin("soyuz", "89626866191");
  
 
  while (WiFi.status() != WL_CONNECTED) {
@@ -150,8 +151,7 @@ close_valve();
 
 void wifi_config_ap() {
       //Local intialization. Once its business is done, there is no need to keep it around
-    WiFiManager wifiManager;
-
+ 
     //reset settings - for testing
     //wifiManager.resetSettings();
 
@@ -163,7 +163,7 @@ void wifi_config_ap() {
 
 }
 void loop() {
-      wifi_config_ap();
+    
 switch_pin_state = digitalRead(SWITCH_PIN);
 	ArduinoOTA.handle();
 ping_time = sonar.ping_median(5);
