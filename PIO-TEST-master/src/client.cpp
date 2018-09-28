@@ -64,6 +64,7 @@ void close_valve();
 void open_valve();
 String values_toString();
 void printToTelnet();
+void wifi_config_ap();
 
 void setup() {
   delay(500);
