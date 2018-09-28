@@ -29,6 +29,7 @@ ESP8266WiFiMulti WiFiMulti;
 #define CM_OFF 80
 #define CM_ON 250
 #define SWITCH_PIN 5
+#define MAX_DELTA 10
 
 String host_souyuz = "http://soyuz.teatrtogo.ru/";
 
@@ -208,7 +209,7 @@ delta = abs(value-distance_cm);
 //value = percent_full; 
 
  // int new_value = 100*(EMPTY_TANK_DISTANCE-FULL_TANK_DISTANCE-sonar.convert_cm(sonar.ping_median(5,EMPTY_TANK_DISTANCE)))/MAX_DISTANCE;
-if (distance_cm>10){
+if (delta>MAX_DELTA){
     value = distance_cm;
   printToTelnet();
   //  printToTelnet(values_toString())
