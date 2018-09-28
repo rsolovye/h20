@@ -182,7 +182,7 @@ void wifi_config_ap() {
   //end-block2
   
  // wifiManager.setSTAStaticIPConfig(_ip, _gw, _sn);
-wifiManager.startConfigPortal()
+wifiManager.startConfigPortal();
 
   //tries to connect to last known settings
   //if it does not connect it starts an access point with the specified name
