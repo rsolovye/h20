@@ -6,6 +6,13 @@
 
 #include <ESP8266HTTPClient.h>
 
+
+//needed for library
+#include <ESP8266WebServer.h>
+#include <DNSServer.h>
+#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
+
+
 #define USE_SERIAL Serial
 
 ESP8266WiFiMulti WiFiMulti;
@@ -60,8 +67,19 @@ void printToTelnet();
 void setup() {
   delay(500);
   pinMode(SWITCH_PIN, INPUT);
-   TelnetServer.begin();
-  TelnetServer.setNoDelay(true);
+    //Local intialization. Once its business is done, there is no need to keep it around
+    WiFiManager wifiManager;
+
+    //reset settings - for testing
+    //wifiManager.resetSettings();
+
+    //sets timeout until configuration portal gets turned off
+    //useful to make it all retry or go to sleep
+    //in seconds
+    wifiManager.setTimeout(120);
+
+  TelnetServer.begin();
+     TelnetServer.setNoDelay(true);
  
   USE_SERIAL.begin(115200);
   // USE_SERIAL.setDebugOutput(true);
@@ -135,6 +153,21 @@ close_valve();
   http.setReuse(true);
 }
 
+
+
+void wifi_config_ap() {
+      //Local intialization. Once its business is done, there is no need to keep it around
+    WiFiManager wifiManager;
+
+    //reset settings - for testing
+    //wifiManager.resetSettings();
+
+    //sets timeout until configuration portal gets turned off
+    //useful to make it all retry or go to sleep
+    //in seconds
+    wifiManager.setTimeout(120);
+
+}
 void loop() {
 switch_pin_state = digitalRead(SWITCH_PIN);
 	ArduinoOTA.handle();
