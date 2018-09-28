@@ -83,7 +83,7 @@ void setup() {
   USE_SERIAL.println();
 
  // WiFi.mode(WIFI_AP_STA);
-     wifi_config_ap();
+
  // WiFi.begin("soyuz", "89626866191");
  
 
@@ -160,7 +160,7 @@ void wifi_config_ap() {
     //useful to make it all retry or go to sleep
     //in seconds
    // wifiManager.setTimeout(120);
-  WiFiManager wifiManager;
+//  WiFiManager wifiManager;
 
   //reset settings - for testing
   //wifiManager.resetSettings();
@@ -198,7 +198,7 @@ wifiManager.startConfigPortal();
 
 }
 void loop() {
-    
+         wifi_config_ap();
 switch_pin_state = digitalRead(SWITCH_PIN);
 	ArduinoOTA.handle();
 ping_time = sonar.ping_median(5);
