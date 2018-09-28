@@ -229,7 +229,7 @@ if (distance_cm >= CM_ON){
 		open_valve();
 	}
 }
-printToTelnet();
+//printToTelnet();
   delay(100);
 }
 
