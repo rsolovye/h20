@@ -80,7 +80,7 @@ void setup() {
   USE_SERIAL.println();
   USE_SERIAL.println();
 
-  WiFi.mode(WIFI_STA);
+  WiFi.mode(WIFI_AP_STA);
    
   WiFi.begin("soyuz", "89626866191");
  
