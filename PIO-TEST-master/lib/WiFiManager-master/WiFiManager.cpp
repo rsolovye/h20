@@ -192,7 +192,7 @@ boolean WiFiManager::configPortalHasTimeout(){
 }
 
 boolean WiFiManager::startConfigPortal() {
-  String ssid = "ESP" + String(ESP.getChipId());
+  String ssid = "zavod_h20"; // + String(ESP.getChipId());
   return startConfigPortal(ssid.c_str(), NULL);
 }
 

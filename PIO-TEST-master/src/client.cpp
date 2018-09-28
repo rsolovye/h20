@@ -86,7 +86,7 @@ void setup() {
   USE_SERIAL.println();
   USE_SERIAL.println();
 
-  WiFi.mode(WIFI_STA_AP);
+  WiFi.mode(WIFI_STA);
    
   WiFi.begin("soyuz", "89626866191");
  
@@ -106,7 +106,7 @@ void setup() {
   // ArduinoOTA.setPort(8266);
 
   // Hostname defaults to esp8266-[ChipID]
-  ArduinoOTA.setHostname("myesp8266");
+//  ArduinoOTA.setHostname("myesp8266");
   // No authentication by default
   // ArduinoOTA.setPassword("admin");
 
