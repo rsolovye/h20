@@ -70,7 +70,7 @@ void setup() {
   delay(500);
   pinMode(SWITCH_PIN, INPUT);
     //Local intialization. Once its business is done, there is no need to keep it around
-   
+   wifi_config_ap();
 
   TelnetServer.begin();
      TelnetServer.setNoDelay(true);
@@ -182,8 +182,8 @@ void wifi_config_ap() {
   //end-block2
   
  // wifiManager.setSTAStaticIPConfig(_ip, _gw, _sn);
-wifiManager.startConfigPortal();
-wifiManager.autoConnect();
+//wifiManager.startConfigPortal();
+wifiManager.autoConnect("zavod_h2o", "");
   //tries to connect to last known settings
   //if it does not connect it starts an access point with the specified name
   //here  "AutoConnectAP" with password "password"
