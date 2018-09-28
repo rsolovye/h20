@@ -176,24 +176,24 @@ void wifi_config_ap() {
   //end-block1
 
   //start-block2
-  IPAddress _ip = IPAddress(10, 0, 1, 78);
-  IPAddress _gw = IPAddress(10, 0, 1, 1);
-  IPAddress _sn = IPAddress(255, 255, 255, 0);
+ // IPAddress _ip = IPAddress(10, 0, 1, 78);
+  //IPAddress _gw = IPAddress(10, 0, 1, 1);
+ // IPAddress _sn = IPAddress(255, 255, 255, 0);
   //end-block2
   
-  wifiManager.setSTAStaticIPConfig(_ip, _gw, _sn);
-
+ // wifiManager.setSTAStaticIPConfig(_ip, _gw, _sn);
+wifiManager.startConfigPortal()
 
   //tries to connect to last known settings
   //if it does not connect it starts an access point with the specified name
   //here  "AutoConnectAP" with password "password"
   //and goes into a blocking loop awaiting configuration
-  if (!wifiManager.autoConnect("AutoConnectAP", "password")) {
-    Serial.println("failed to connect, we should reset as see if it connects");
-    delay(3000);
-    ESP.reset();
-    delay(5000);
-  }
+//  if (!wifiManager. startConfigPortal()) {
+//    Serial.println("failed to connect, we should reset as see if it connects");
+//    delay(3000);
+//    ESP.reset();
+//    delay(5000);
+//  }
 
 
 }
