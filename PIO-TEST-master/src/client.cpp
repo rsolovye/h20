@@ -68,13 +68,7 @@ void setup() {
   delay(500);
   pinMode(SWITCH_PIN, INPUT);
     //Local intialization. Once its business is done, there is no need to keep it around
-    WiFiManager wifiManager;
-
-    //reset settings - for testingS
-    //wifiManager.resetSettings();
-
-  
-    wifiManager.setTimeout(120);
+   
 
   TelnetServer.begin();
      TelnetServer.setNoDelay(true);
@@ -149,6 +143,7 @@ close_valve();
   USE_SERIAL.println(WiFi.localIP());
    WiFi.setAutoReconnect(true);// if (Wifi.isConnected()..setA)
   http.setReuse(true);
+  wifi_config_ap();
 }
 
 
