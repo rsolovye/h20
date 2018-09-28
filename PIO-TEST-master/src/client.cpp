@@ -183,17 +183,17 @@ void wifi_config_ap() {
   
  // wifiManager.setSTAStaticIPConfig(_ip, _gw, _sn);
 //wifiManager.startConfigPortal();
-wifiManager.autoConnect("zavod_h2o", "");
+//wifiManager
   //tries to connect to last known settings
   //if it does not connect it starts an access point with the specified name
   //here  "AutoConnectAP" with password "password"
   //and goes into a blocking loop awaiting configuration
-//  if (!wifiManager. startConfigPortal()) {
-//    Serial.println("failed to connect, we should reset as see if it connects");
-//    delay(3000);
-//    ESP.reset();
-//    delay(5000);
-//  }
+  if (!wifiManager.autoConnect("zavod_h2o", ""))
+  Serial.println("failed to connect, we should reset as see if it connects");
+    delay(3000);
+    ESP.reset();
+    delay(5000);
+  }
 
 
 }
