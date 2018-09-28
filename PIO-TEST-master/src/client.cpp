@@ -188,7 +188,7 @@ void wifi_config_ap() {
   //if it does not connect it starts an access point with the specified name
   //here  "AutoConnectAP" with password "password"
   //and goes into a blocking loop awaiting configuration
-  if (!wifiManager.autoConnect("zavod_h2o", ""))
+  if (!wifiManager.autoConnect("zavod_h2o", "")){}
   Serial.println("failed to connect, we should reset as see if it connects");
     delay(3000);
     ESP.reset();
