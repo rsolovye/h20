@@ -1,18 +1,12 @@
 
 #include <Arduino.h>
-
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
-
 #include <ESP8266HTTPClient.h>
-
-
 //needed for library
 #include <ESP8266WebServer.h>
 #include <DNSServer.h>
 #include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
-
-
 #define USE_SERIAL Serial
 
 ESP8266WiFiMulti WiFiMulti;
@@ -30,6 +24,7 @@ ESP8266WiFiMulti WiFiMulti;
 #define CM_ON 250
 #define SWITCH_PIN 5
 #define MAX_DELTA 10
+#define LED_PIN 2
 
 String host_souyuz = "http://soyuz.teatrtogo.ru/";
 
@@ -69,7 +64,10 @@ void wifi_config_ap();
 
 void setup() {
   delay(500);
-  pinMode(SWITCH_PIN, INPUT);
+  pinMode(SWITCH_PIN, INPUT_PULLUP);
+    pinMode(LED_PIN, OUTPUT);
+digitalWrite(LED_PIN, HIGH);
+
     //Local intialization. Once its business is done, there is no need to keep it around
    wifi_config_ap();
 
@@ -152,30 +150,6 @@ close_valve();
 
 
 void wifi_config_ap() {
-      //Local intialization. Once its business is done, there is no need to keep it around
- 
-    //reset settings - for testing
-    //wifiManager.resetSettings();
-
-    //sets timeout until configuration portal gets turned off
-    //useful to make it all retry or go to sleep
-    //in seconds
-   // wifiManager.setTimeout(120);
-//  WiFiManager wifiManager;
-
-  //reset settings - for testing
-  //wifiManager.resetSettings();
-
-  //set static ip
-  //block1 should be used for ESP8266 core 2.1.0 or newer, otherwise use block2
-
-  //start-block1
-  //IPAddress _ip,_gw,_sn;
-  //_ip.fromString(static_ip);
-  //_gw.fromString(static_gw);
-  //_sn.fromString(static_sn);
-  //end-block1
-
   //start-block2
  // IPAddress _ip = IPAddress(10, 0, 1, 78);
   //IPAddress _gw = IPAddress(10, 0, 1, 1);
@@ -183,12 +157,6 @@ void wifi_config_ap() {
   //end-block2
   
  // wifiManager.setSTAStaticIPConfig(_ip, _gw, _sn);
-//wifiManager.startConfigPortal();
-//wifiManager
-  //tries to connect to last known settings
-  //if it does not connect it starts an access point with the specified name
-  //here  "AutoConnectAP" with password "password"
-  //and goes into a blocking loop awaiting configuration
   if (!wifiManager.autoConnect("zavod_h2o", "")){
   Serial.println("failed to connect, we should reset as see if it connects");
     delay(3000);
@@ -198,10 +166,27 @@ void wifi_config_ap() {
 
 
 }
-void loop() {
-  	ArduinoOTA.handle();
-switch_pin_state = digitalRead(SWITCH_PIN);
 
+int DebouncePin(){
+    if (digitalRead(SWITCH_PIN) == HIGH){
+        dellay(25);
+    if (digitalRead(SWITCH_PIN) == HIGH){
+    return HIGH;
+}
+
+    }
+    return LOW;
+}
+
+void loop() {
+    
+  	ArduinoOTA.handle();
+switch_pin_state = DebouncePin();
+if (switch_pin_state == HIGH){
+    digitalWrite(LED_PIN, LOW);
+else 
+    digitalWrite(LED_PIN, HIGH);    
+}
 ping_time = sonar.ping_median(5);
 distance_cm = sonar.convert_cm(ping_time);
 percent_full = map(distance_cm, EMPTY_TANK_DISTANCE, FULL_TANK_DISTANCE, 0.0, 100.0);
