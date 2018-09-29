@@ -169,7 +169,7 @@ void wifi_config_ap() {
 
 int DebouncePin(){
     if (digitalRead(SWITCH_PIN) == HIGH){
-        dellay(25);
+        delay(25);
     if (digitalRead(SWITCH_PIN) == HIGH){
     return HIGH;
 }
@@ -184,9 +184,13 @@ void loop() {
 switch_pin_state = DebouncePin();
 if (switch_pin_state == HIGH){
     digitalWrite(LED_PIN, LOW);
-else 
-    digitalWrite(LED_PIN, HIGH);    
 }
+
+else 
+ {
+     
+ }   digitalWrite(LED_PIN, HIGH);    
+
 ping_time = sonar.ping_median(5);
 distance_cm = sonar.convert_cm(ping_time);
 percent_full = map(distance_cm, EMPTY_TANK_DISTANCE, FULL_TANK_DISTANCE, 0.0, 100.0);
