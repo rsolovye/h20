@@ -66,7 +66,7 @@ void setup() {
   delay(500);
   pinMode(SWITCH_PIN, INPUT_PULLUP);
     pinMode(LED_PIN, OUTPUT);
-digitalWrite(LED_PIN, HIGH);
+digitalWrite(LED_PIN, LOW);
 
     //Local intialization. Once its business is done, there is no need to keep it around
    wifi_config_ap();
@@ -352,6 +352,8 @@ g+= " switch_pin_state: ";
 g+= switch_pin_state;
 g+= " value: ";
 g+= value;
+g+= " gpio_5: ";
+	g+= switch_pin_state;
  g+="\n";
 
        //String g = host_souyuz;
