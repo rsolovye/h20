@@ -18,7 +18,7 @@ ESP8266WiFiMulti WiFiMulti;
 
 #define TRIGGER_PIN  13  // Arduino pin tied to trigger pin on the ultrasonic sensor.
 #define ECHO_PIN     12  // Arduino pin tied to echo pin on the ultrasonic sensor.
- // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm.
+
 #define VALVE_PIN 4
 #define CM_OFF 80
 #define CM_ON 250
@@ -44,6 +44,7 @@ unsigned int switch_pin_state = 0;
 
 bool is_open = false;
 unsigned long ping_time = 0;
+
 NewPingESP8266 sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); // NewPingESP8266 setup of pins and maximum distance.
 
 HTTPClient http;
@@ -51,65 +52,46 @@ HTTPClient http;
 const uint16_t aport = 23;
 WiFiServer TelnetServer(aport);
 WiFiClient Telnet;
-   WiFiManager wifiManager;
+WiFiManager wifiManager;
 
 String last_payload = "";
 void report_water_level();
 void printDebug();
 void close_valve();
 void open_valve();
+void ota_setup();
 String values_toString();
 void printToTelnet();
 void wifi_config_ap();
+void pinMode_setup();
+void read_switch_pin();
+void valve_control();
 
 void setup() {
   delay(500);
   pinMode(SWITCH_PIN, INPUT_PULLUP);
     pinMode(LED_PIN, OUTPUT);
-digitalWrite(LED_PIN, LOW);
+    digitalWrite(LED_PIN, LOW);
+pinMode(VALVE_PIN, OUTPUT);
+close_valve();
 
-    //Local intialization. Once its business is done, there is no need to keep it around
-   wifi_config_ap();
 
+  wifi_config_ap();
   TelnetServer.begin();
-     TelnetServer.setNoDelay(true);
+  TelnetServer.setNoDelay(true);
+
+  ota_setup();
+
+  WiFi.setAutoReconnect(true);// if (Wifi.isConnected()..setA)
+  http.setReuse(true);
+
+  USE_SERIAL.begin(115200);USE_SERIAL.println();USE_SERIAL.println();USE_SERIAL.println();
+  USE_SERIAL.print("IP address: ");
+  USE_SERIAL.println(WiFi.localIP());
  
-  USE_SERIAL.begin(115200);
-  // USE_SERIAL.setDebugOutput(true);
+}
 
-  USE_SERIAL.println();
-  USE_SERIAL.println();
-  USE_SERIAL.println();
-       wifi_config_ap();
- // WiFi.mode(WIFI_AP_STA);
-
- // WiFi.begin("soyuz", "89626866191");
- 
-
-// while (wif.status() != WL_CONNECTED) {
-//    delay(500);
-//     USE_SERIAL.print(".");
-//  }
-//
-//   while (WiFi.waitForConnectResult() != WL_CONNECTED) {
-//    Serial.println("Connection Failed! Rebooting...");
-//    delay(5000);
-//    ESP.restart();
-//  }
-
-     // Port defaults to 8266
-  // ArduinoOTA.setPort(8266);
-
-  // Hostname defaults to esp8266-[ChipID]
-//  ArduinoOTA.setHostname("myesp8266");
-  // No authentication by default
-  // ArduinoOTA.setPassword("admin");
-
-  // Password can be set with it's md5 value as well
-  // MD5(admin) = 21232f297a57a5a743894a0e4a801fc3
-  // ArduinoOTA.setPasswordHash("21232f297a57a5a743894a0e4a801fc3");
-
-  ArduinoOTA.onStart([]() {
+void ota_setup(){  ArduinoOTA.onStart([]() {
     String type;
     if (ArduinoOTA.getCommand() == U_FLASH)
       type = "sketch";
@@ -134,20 +116,7 @@ digitalWrite(LED_PIN, LOW);
     else if (error == OTA_END_ERROR) Serial.println("End Failed");
   });
   ArduinoOTA.begin();
-pinMode(VALVE_PIN, OUTPUT);
-close_valve();
-
-  USE_SERIAL.println("");
-  USE_SERIAL.print("Connected to ");
-  USE_SERIAL.println("soyuz");
-  USE_SERIAL.print("IP address: ");
-  USE_SERIAL.println(WiFi.localIP());
-   WiFi.setAutoReconnect(true);// if (Wifi.isConnected()..setA)
-  http.setReuse(true);
-
 }
-
-
 
 void wifi_config_ap() {
   //start-block2
@@ -181,32 +150,39 @@ int DebouncePin(){
 void loop() {
     
   	ArduinoOTA.handle();
-switch_pin_state = DebouncePin();
-if (switch_pin_state == HIGH){
+  	read_switch_pin();
+    
+ping_time = sonar.ping_median(5);
+distance_cm = sonar.convert_cm(ping_time);
+//percent_full = map(distance_cm, EMPTY_TANK_DISTANCE, FULL_TANK_DISTANCE, 0.0, 100.0);
+delta = abs(value-distance_cm);
+
+if (delta>MAX_DELTA){
+    value = distance_cm;
+    printToTelnet();
+    report_water_level();
+}
+
+valve_control();
+delay(100);
+
+}
+
+void read_switch_pin(){
+    switch_pin_state = digitalRead(SWITCH_PIN);
+    
+    if (switch_pin_state == HIGH){
     digitalWrite(LED_PIN, LOW);
 }
 
 else 
- {
-     
- }   digitalWrite(LED_PIN, HIGH);    
+ {    
+    digitalWrite(LED_PIN, HIGH);    
+ }
 
-ping_time = sonar.ping_median(5);
-distance_cm = sonar.convert_cm(ping_time);
-percent_full = map(distance_cm, EMPTY_TANK_DISTANCE, FULL_TANK_DISTANCE, 0.0, 100.0);
-delta = abs(value-distance_cm);
-//value = percent_full; 
-
- // int new_value = 100*(EMPTY_TANK_DISTANCE-FULL_TANK_DISTANCE-sonar.convert_cm(sonar.ping_median(5,EMPTY_TANK_DISTANCE)))/MAX_DISTANCE;
-if (delta>MAX_DELTA){
-    value = distance_cm;
-  printToTelnet();
-  //  printToTelnet(values_toString())
-  //USE_SERIAL.println(value);
-    report_water_level();
 }
 
-
+void valve_control(){
 if (distance_cm <= CM_OFF){
 	if (is_open){	
 		close_valve();
@@ -218,8 +194,7 @@ if (distance_cm >= CM_ON){
 		open_valve();
 	}
 }
-//printToTelnet();
-  delay(100);
+ 
 }
 
 //if Telnet.
@@ -341,44 +316,19 @@ return g;
 
 void printToTelnet(){
   String g = "";
- 
-  
+
 long ddm = ping_time;//distance_cm;//sonar.ping_median(5, MAX_DISTANCE);
 g+= "echo_time: ";
 g+=ddm; 
 g+= "  distance_cm: ";
- g+= distance_cm;
+g+= distance_cm;
 g+= " switch_pin_state: ";
 g+= switch_pin_state;
 g+= " value: ";
 g+= value;
 g+= " gpio_5: ";
-	g+= switch_pin_state;
- g+="\n";
-
-       //String g = host_souyuz;
-   // g+=  "api/soyuz/update.php?\n";
-    //g+= "level=";
-    //g+=value;
-    //g+="&station=US_LEVEL"; //HTTP
-    //g+="&ping=";
-    //g+=ping_time;
-    //g+="&delta=";
-    //g+=delta;
-    //g+="&is_open=";
-    //g+=is_open;
-    //g+="&local_IP=";
-    //g+=WiFi.localIP().toString();
-   // g+= "\nFULL_TANK_DISTANCE ";
-   // g+=FULL_TANK_DISTANCE;// = 20.0;
-   // g+= "\nEMPTY_TANK_DISTANCE ";
-//g+= EMPTY_TANK_DISTANCE;
-//g+= "\nDELTA_DISTANCE ";
-//g+= DELTA_DISTANCE;
-//g+= "\nVALVE_LEVEL_OPEN ";
-//g+= VALVE_LEVEL_OPEN;
-//g+= "\nVALVE_LEVEL_CLOSE ";
-//g+= VALVE_LEVEL_CLOSE;
+g+= switch_pin_state;
+g+="\n";
 
  if (!Telnet) {  // otherwise it works only once
         Telnet = TelnetServer.available();
