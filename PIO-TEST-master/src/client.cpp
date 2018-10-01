@@ -209,7 +209,8 @@ void report_water_level(){
     String g = host_souyuz;
     g+=  "api/soyuz/update.php?level=";
     g+=value;
-    g+="&station=US_LEVEL"; //HTTP
+    g+="&station="; //HTTP
+    g+=WiFi.localIP().toString();
     g+="&ping=";
     g+=ping_time;
     g+="&delta=";
