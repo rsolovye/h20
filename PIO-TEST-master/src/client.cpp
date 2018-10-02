@@ -219,8 +219,13 @@ void report_water_level(){
     g+=is_open;
     g+="&local_IP=";
     g+=WiFi.localIP().toString();
-
-
+    g+="&GPIO_5=";
+    g+=switch_pin_state;
+    g+="&GPIO_4=";
+    g+=digitalRead(VALVE_PIN);
+    g+="&LED_PIN=";
+    g+=digitalRead(LED_PIN);
+    
     http.begin(g);
     USE_SERIAL.print("[HTTP] GET...\n");
     int httpCode = http.GET();
