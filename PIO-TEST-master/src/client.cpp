@@ -33,7 +33,11 @@ unsigned long FULL_TANK_DISTANCE = 20.0;
 unsigned long EMPTY_TANK_DISTANCE = 320.0;
 
 unsigned int MAX_DISTANCE = EMPTY_TANK_DISTANCE - FULL_TANK_DISTANCE;
-
+  unsigned long report_interval = 10000;
+   unsigned long ping_interval = 100;
+  unsigned long last_ping_time = 0;
+   unsigned long last_report_time = 0;
+ 
 int DELTA_DISTANCE = 5;
 unsigned int VALVE_LEVEL_OPEN = 50;
 unsigned int VALVE_LEVEL_CLOSE = 80;
@@ -45,9 +49,9 @@ unsigned int switch_pin_state = 0;
 
 bool is_open = false;
 unsigned long ping_time = 0;
-
+    
 NewPingESP8266 sonar(TRIGGER_PIN, ECHO_PIN, EMPTY_TANK_DISTANCE); // NewPingESP8266 setup of pins and maximum distance.
-RunningMedian samples = RunningMedian(50);
+RunningMedian samples = RunningMedian(MEDIAN_MAX_SIZE);
 HTTPClient http;
 long pcm = 0;
 const uint16_t aport = 23;
@@ -155,34 +159,39 @@ void loop() {
     
   	ArduinoOTA.handle();
   	read_switch_pin();
-  	
-if (calibrated==false){
-    RunningMedian first_value = RunningMedian(5);
-    for (int i = 0; i<5; i++){
-        first_value.add(sonar.ping_cm(EMPTY_TANK_DISTANCE));
-        delay(50);
-    }
-    value = first_value.getHighest();
-    calibrated = true;
-    printToTelnet();
-    report_water_level();
-}  	
-//ping_time = sonar.ping_median(5,EMPTY_TANK_DISTANCE);
-else 
-{
-    pcm = sonar.ping_cm(EMPTY_TANK_DISTANCE);
-
-
-if (abs(pcm-value)<DELTA_OUTLIER)
-     samples.add(pcm);
-//distance_cm = sonar.convert_cm(ping_time);
-distance_cm = samples.getMedian();
-
-//percent_full = map(distance_cm, EMPTY_TANK_DISTANCE, FULL_TANK_DISTANCE, 0.0, 100.0);
-delta = abs(value-distance_cm);
-
+//  	
+//if (calibrated==false){
+//    RunningMedian first_value = RunningMedian(5);
+//    for (int i = 0; i<5; i++){
+//        first_value.add(sonar.ping_cm(EMPTY_TANK_DISTANCE));
+//        delay(50);
+//    }
+//    value = first_value.getHighest();
+//    calibrated = true;
+//    printToTelnet();
+//    report_water_level();
+//}  	
+////ping_time = sonar.ping_median(5,EMPTY_TANK_DISTANCE);
+//else 
+//{
     
-if (delta>MAX_DELTA){
+   
+
+unsigned long current_ping_time = millis();
+if (ping_interval < (current_ping_time - last_ping_time) )
+{
+    last_ping_time = current_ping_time;
+     pcm = sonar.ping_cm(EMPTY_TANK_DISTANCE);
+     samples.add(pcm);
+}
+
+    //distance_cm = sonar.convert_cm(ping_time);
+    if (samples.getCount() == MEDIAN_MAX_SIZE)
+        { distance_cm = samples.getAverage(5);
+          delta = abs(value-distance_cm);
+
+if (delta>MAX_DELTA || report_interval < (current_ping_time - last_report_time)){
+    last_report_time = current_ping_time;
     value = distance_cm;
     printToTelnet();
     report_water_level();
