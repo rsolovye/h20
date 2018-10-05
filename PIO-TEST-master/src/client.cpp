@@ -88,11 +88,7 @@ close_valve();
   ota_setup();
 
   //WiFi.setAutoReconnect(true);// if (Wifi.isConnected()..setA)
-  //http.setReuse(true);
-
- // USE_SERIAL.begin(115200);USE_SERIAL.println();USE_SERIAL.println();USE_SERIAL.println();
-  //USE_SERIAL.print("IP address: ");
-  //USE_SERIAL.println(WiFi.localIP());
+  http.setReuse(true);
 local_ip=WiFi.localIP().toString();	 
 
 }
@@ -158,6 +154,8 @@ int DebouncePin(){
 void loop() {
     
   	ArduinoOTA.handle();
+  	read_switch_pin();
+  	
 if (calibrated==false){
     RunningMedian first_value = RunningMedian(5);
     for (int i = 0; i<5; i++){
@@ -166,6 +164,8 @@ if (calibrated==false){
     }
     value = first_value.getHighest();
     calibrated = true;
+    printToTelnet();
+    report_water_level();
 }  	
 //ping_time = sonar.ping_median(5,EMPTY_TANK_DISTANCE);
 else 
@@ -180,12 +180,11 @@ distance_cm = samples.getMedian();
 
 //percent_full = map(distance_cm, EMPTY_TANK_DISTANCE, FULL_TANK_DISTANCE, 0.0, 100.0);
 delta = abs(value-distance_cm);
-read_switch_pin();
+
     
 if (delta>MAX_DELTA){
     value = distance_cm;
     printToTelnet();
-  //  printToTelnet();
     report_water_level();
 }
 }
