@@ -355,7 +355,8 @@ void printToTelnet(){
 //g+= " value: ";
 //g+= value;
 //g+= " gpio_5: ";
-//g+= switch_pin_state;
+//g+= switch_pin_stat
+e;
 //g+="\n";
 //String m=value;
 //m+= ": ";m += samples.getLowest();m +=   " ";m += samples.getMedian();m +=   " ";m +=    samples.getHighest();
@@ -366,8 +367,8 @@ void printToTelnet(){
       Telnet.println(value);
 
     Telnet.println(samples.getLowest());
-      Telnet.println(samples.getLowest());
-  Telnet.println(samples.getLowest());
+      Telnet.println(samples.getMedian());
+  Telnet.println(samples.getHighest());
   Telnet.println("----");
 
 	}  
