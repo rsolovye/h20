@@ -48,7 +48,6 @@ unsigned long ping_time = 0;
 
 NewPingESP8266 sonar(TRIGGER_PIN, ECHO_PIN, EMPTY_TANK_DISTANCE); // NewPingESP8266 setup of pins and maximum distance.
 RunningMedian samples = RunningMedian(50);
-
 HTTPClient http;
 long pcm = 0;
 const uint16_t aport = 23;
@@ -58,7 +57,8 @@ WiFiManager wifiManager;
 String local_ip ="1.1.1.1";
 String last_payload = "";
 String payload = "";
-
+bool calibrated = false;
+const int DELTA_OUTLIER = 30; 
 
 void report_water_level();
 void printDebug();
@@ -94,9 +94,11 @@ close_valve();
   //USE_SERIAL.print("IP address: ");
   //USE_SERIAL.println(WiFi.localIP());
 local_ip=WiFi.localIP().toString();	 
+
 }
 
 void ota_setup(){  ArduinoOTA.onStart([]() {
+
     String type;
     if (ArduinoOTA.getCommand() == U_FLASH)
       type = "sketch";
@@ -156,10 +158,22 @@ int DebouncePin(){
 void loop() {
     
   	ArduinoOTA.handle();
-  	
+if (calibrated==false){
+    RunningMedian first_value = RunningMedian(5);
+    for (int i = 0; i<5; i++){
+        first_value.add(sonar.ping_cm(EMPTY_TANK_DISTANCE));
+        delay(50);
+    }
+    value = first_value.getHighest();
+}  	
 //ping_time = sonar.ping_median(5,EMPTY_TANK_DISTANCE);
-pcm = sonar.ping_cm(EMPTY_TANK_DISTANCE);
-samples.add(pcm);
+else 
+{
+    pcm = sonar.ping_cm(EMPTY_TANK_DISTANCE);
+
+
+if (abs(pcm-value)<DELTA_OUTLIER)
+     samples.add(pcm);
 //distance_cm = sonar.convert_cm(ping_time);
 distance_cm = samples.getMedian();
 
@@ -173,7 +187,7 @@ if (delta>MAX_DELTA){
   //  printToTelnet();
     report_water_level();
 }
-
+}
 valve_control();
 //delay(100);
 
