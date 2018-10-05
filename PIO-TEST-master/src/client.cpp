@@ -21,7 +21,7 @@ ESP8266WiFiMulti WiFiMulti;
 
 #define VALVE_PIN 4
 #define CM_OFF 80
-#define CM_ON 250
+#define CM_ON 200
 #define SWITCH_PIN 5
 #define MAX_DELTA 10
 #define LED_PIN 2
@@ -45,16 +45,18 @@ unsigned int switch_pin_state = 0;
 bool is_open = false;
 unsigned long ping_time = 0;
 
-NewPingESP8266 sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); // NewPingESP8266 setup of pins and maximum distance.
+NewPingESP8266 sonar(TRIGGER_PIN, ECHO_PIN, EMPTY_TANK_DISTANCE); // NewPingESP8266 setup of pins and maximum distance.
 
 HTTPClient http;
-
-const uint16_t aport = 23;
-WiFiServer TelnetServer(aport);
-WiFiClient Telnet;
+long pcm = 0;
+//const uint16_t aport = 23;
+//WiFiServer TelnetServer(aport);
+//WiFiClient Telnet;
 WiFiManager wifiManager;
-
+String local_ip ="1.1.1.1";
 String last_payload = "";
+String payload = "";
+
 void report_water_level();
 void printDebug();
 void close_valve();
@@ -77,8 +79,8 @@ close_valve();
 
 
   wifi_config_ap();
-  TelnetServer.begin();
-  TelnetServer.setNoDelay(true);
+//  TelnetServer.begin();
+//  TelnetServer.setNoDelay(true);
 
   ota_setup();
 
@@ -88,7 +90,7 @@ close_valve();
   USE_SERIAL.begin(115200);USE_SERIAL.println();USE_SERIAL.println();USE_SERIAL.println();
   USE_SERIAL.print("IP address: ");
   USE_SERIAL.println(WiFi.localIP());
- 
+local_ip=WiFi.localIP().toString();	 
 }
 
 void ota_setup(){  ArduinoOTA.onStart([]() {
@@ -130,7 +132,7 @@ void wifi_config_ap() {
   Serial.println("failed to connect, we should reset as see if it connects");
     delay(3000);
     ESP.reset();
-    delay(5000);
+//    delay(5000);
   }
 
 
@@ -150,35 +152,36 @@ int DebouncePin(){
 void loop() {
     
   	ArduinoOTA.handle();
-  	read_switch_pin();
-    
-ping_time = sonar.ping_median(5);
+  	
+ping_time = sonar.ping_median(5,EMPTY_TANK_DISTANCE);
+//pcm = sonar.ping_cm(EMPTY_TANK_DISTANCE);
 distance_cm = sonar.convert_cm(ping_time);
 //percent_full = map(distance_cm, EMPTY_TANK_DISTANCE, FULL_TANK_DISTANCE, 0.0, 100.0);
 delta = abs(value-distance_cm);
-
+read_switch_pin();
+    
 if (delta>MAX_DELTA){
     value = distance_cm;
-    printToTelnet();
+  //  printToTelnet();
     report_water_level();
 }
 
 valve_control();
-delay(100);
+//delay(100);
 
 }
 
 void read_switch_pin(){
     switch_pin_state = digitalRead(SWITCH_PIN);
     
-    if (switch_pin_state == HIGH){
-    digitalWrite(LED_PIN, LOW);
-}
+   // if (switch_pin_state == HIGH){
+   // digitalWrite(LED_PIN, LOW);
+//}
 
-else 
- {    
-    digitalWrite(LED_PIN, HIGH);    
- }
+//else 
+// {    
+//    digitalWrite(LED_PIN, HIGH);    
+// }
 
 }
 
@@ -210,7 +213,7 @@ void report_water_level(){
     g+=  "api/soyuz/update.php?level=";
     g+=value;
     g+="&station="; //HTTP
-    g+=WiFi.localIP().toString();
+    g+=local_ip;
     g+="&ping=";
     g+=ping_time;
     g+="&delta=";
@@ -218,37 +221,48 @@ void report_water_level(){
     g+="&is_open=";
     g+=is_open;
     g+="&local_IP=";
-    g+=WiFi.localIP().toString();
+    g+=local_ip;
     g+="&GPIO_5=";
     g+=switch_pin_state;
     g+="&GPIO_4=";
     g+=digitalRead(VALVE_PIN);
     g+="&LED_PIN=";
     g+=digitalRead(LED_PIN);
-    
+   g+="&FULL_TANK_DISTANCE=";
+g+=FULL_TANK_DISTANCE;
+g+="&EMPTY_TANK_DISTANCE=";
+g+= EMPTY_TANK_DISTANCE;
+g+= "&DELTA_DISTANCE=";
+g+= DELTA_DISTANCE;
+g+= "&VALVE_LEVEL_OPEN=";
+g+= VALVE_LEVEL_OPEN;
+g+= "&VALVE_LEVEL_CLOSE=";
+g+= VALVE_LEVEL_CLOSE;
+
     http.begin(g);
+
     USE_SERIAL.print("[HTTP] GET...\n");
     int httpCode = http.GET();
     if (httpCode > 0) {
       USE_SERIAL.printf("[HTTP] GET... code: %d\n", httpCode);
     if (httpCode == HTTP_CODE_OK) {
-        String payload = http.getString();
-        //USE_SERIAL.println(payload);
+         payload = http.getString();
+        USE_SERIAL.println(payload);
 	
-	last_payload += value;
-	last_payload += " LED:";
-	if (digitalRead(2) == LOW){
-		last_payload += "ON";
-	}
-	else 
-	{
-        	last_payload+= "OFF";
-	}
-  last_payload += " is_open=";
-  last_payload += is_open;
-	last_payload += "\n";
-	last_payload += payload;
-	printDebug();
+//	last_payload += value;
+//	last_payload += " LED:";
+//	if (digitalRead(2) == LOW){
+//		last_payload += "ON";
+//	}
+//	else 
+//	{
+//        	last_payload+= "OFF";
+//	}
+//  last_payload += " is_open=";
+//  last_payload += is_open;
+//	last_payload += "\n";
+//	last_payload += payload;
+//	printDebug();
 	    		     
 }
     } else {
@@ -268,27 +282,27 @@ void report_water_level(){
 void open_valve() {
 digitalWrite(VALVE_PIN, HIGH);
 is_open = true;
-last_payload = "VALVE - OPENED";
-printDebug();
+//last_payload = "VALVE - OPENED";
+//printDebug();
 }
 
 void close_valve(){
 digitalWrite(VALVE_PIN, LOW);
 is_open = false;
-last_payload = "VALVE - CLOSED";
-printDebug();
+//last_payload = "VALVE - CLOSED";
+//printDebug();
 }
 
 void printDebug(){
 //Prints to telnet if connected
  // Serial.println(last_payload);
- if (!Telnet) {  // otherwise it works only once
-        Telnet = TelnetServer.available();
- }
-       	if (Telnet.connected()) {
-    Telnet.println(last_payload);
-  last_payload = "";
-	}  
+// if (!Telnet) {  // otherwise it works only once
+ //       Telnet = TelnetServer.available();
+// }
+//       	if (Telnet.connected()) {
+//    Telnet.println(last_payload);
+//  last_payload = "";
+//	}  
 
 }
 
@@ -305,9 +319,9 @@ String values_toString(){
     g+="&is_open=";
     g+=is_open;
     g+="&local_IP=";
-    g+=WiFi.localIP().toString();
+    g+=local_ip;
     g+= "\nFULL_TANK_DISTANCE ";
-    g+=FULL_TANK_DISTANCE;// = 20.0;
+    g+=FULL_TANK_DISTANCE;
     g+= "\nEMPTY_TANK_DISTANCE ";
 g+= EMPTY_TANK_DISTANCE;
 g+= "\nDELTA_DISTANCE ";
@@ -321,26 +335,28 @@ return g;
   
 
 void printToTelnet(){
-  String g = "";
+//  String g = "";
 
-long ddm = ping_time;//distance_cm;//sonar.ping_median(5, MAX_DISTANCE);
-g+= "echo_time: ";
-g+=ddm; 
-g+= "  distance_cm: ";
-g+= distance_cm;
-g+= " switch_pin_state: ";
-g+= switch_pin_state;
-g+= " value: ";
-g+= value;
-g+= " gpio_5: ";
-g+= switch_pin_state;
-g+="\n";
+//long ddm = ping_time;//distance_cm;//sonar.ping_median(5, MAX_DISTANCE);
+//g+= "echo_time: ";
+//g+=ddm; 
+//g+= "  distance_cm: ";
+//g+= distance_cm;
+//g+= " pcm: ";
+//g+= pcm;
+//g+= " switch_pin_state: ";
+//g+= switch_pin_state;
+//g+= " value: ";
+//g+= value;
+//g+= " gpio_5: ";
+//g+= switch_pin_state;
+//g+="\n";
 
- if (!Telnet) {  // otherwise it works only once
-        Telnet = TelnetServer.available();
- }
-       	if (Telnet.connected()) {
-    Telnet.println(g);
-	}  
+// if (!Telnet) {  // otherwise it works only once
+//        Telnet = TelnetServer.available();
+// }
+//       	if (Telnet.connected()) {
+//    Telnet.println(g);
+//	}  
 
 }
