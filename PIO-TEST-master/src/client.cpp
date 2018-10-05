@@ -1,7 +1,7 @@
 
 #include <Arduino.h>
-#include <ESP8266WiFi.h>
-#include <ESP8266WiFiMulti.h>
+//#include <ESP8266WiFi.h>
+//#include <ESP8266WiFiMulti.h>
 #include <ESP8266HTTPClient.h>
 //needed for library
 #include <ESP8266WebServer.h>
@@ -9,7 +9,7 @@
 #include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
 #define USE_SERIAL Serial
 
-ESP8266WiFiMulti WiFiMulti;
+//ESP8266WiFiMulti WiFiMulti;
 #include <ESP8266mDNS.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
@@ -87,12 +87,12 @@ close_valve();
 
   ota_setup();
 
-  WiFi.setAutoReconnect(true);// if (Wifi.isConnected()..setA)
-  http.setReuse(true);
+  //WiFi.setAutoReconnect(true);// if (Wifi.isConnected()..setA)
+  //http.setReuse(true);
 
-  USE_SERIAL.begin(115200);USE_SERIAL.println();USE_SERIAL.println();USE_SERIAL.println();
-  USE_SERIAL.print("IP address: ");
-  USE_SERIAL.println(WiFi.localIP());
+ // USE_SERIAL.begin(115200);USE_SERIAL.println();USE_SERIAL.println();USE_SERIAL.println();
+  //USE_SERIAL.print("IP address: ");
+  //USE_SERIAL.println(WiFi.localIP());
 local_ip=WiFi.localIP().toString();	 
 }
 
@@ -131,11 +131,12 @@ void wifi_config_ap() {
   //end-block2
   
  // wifiManager.setSTAStaticIPConfig(_ip, _gw, _sn);
+wifiManager.setConfigPortalTimeout(180);
   if (!wifiManager.autoConnect("zavod_h2o", "")){
   Serial.println("failed to connect, we should reset as see if it connects");
     delay(3000);
     ESP.reset();
-//    delay(5000);
+    delay(5000);
   }
 
 
@@ -161,13 +162,14 @@ pcm = sonar.ping_cm(EMPTY_TANK_DISTANCE);
 samples.add(pcm);
 //distance_cm = sonar.convert_cm(ping_time);
 distance_cm = samples.getMedian();
-printToTelnet();
+
 //percent_full = map(distance_cm, EMPTY_TANK_DISTANCE, FULL_TANK_DISTANCE, 0.0, 100.0);
 delta = abs(value-distance_cm);
 read_switch_pin();
     
 if (delta>MAX_DELTA){
     value = distance_cm;
+    printToTelnet();
   //  printToTelnet();
     report_water_level();
 }
