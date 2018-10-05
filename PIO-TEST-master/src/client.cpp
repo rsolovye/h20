@@ -356,7 +356,7 @@ void printToTelnet(){
 //g+= value;
 //g+= " gpio_5: ";
 //g+= switch_pin_stat
-e;
+//e;
 //g+="\n";
 //String m=value;
 //m+= ": ";m += samples.getLowest();m +=   " ";m += samples.getMedian();m +=   " ";m +=    samples.getHighest();
