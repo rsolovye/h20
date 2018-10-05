@@ -13,6 +13,7 @@ ESP8266WiFiMulti WiFiMulti;
 #include <ESP8266mDNS.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
+#include <RunningMedian.h>
 
 #include <NewPingESP8266.h>
 
@@ -46,16 +47,18 @@ bool is_open = false;
 unsigned long ping_time = 0;
 
 NewPingESP8266 sonar(TRIGGER_PIN, ECHO_PIN, EMPTY_TANK_DISTANCE); // NewPingESP8266 setup of pins and maximum distance.
+RunningMedian samples = RunningMedian(50);
 
 HTTPClient http;
 long pcm = 0;
-//const uint16_t aport = 23;
-//WiFiServer TelnetServer(aport);
-//WiFiClient Telnet;
+const uint16_t aport = 23;
+WiFiServer TelnetServer(aport);
+WiFiClient Telnet;
 WiFiManager wifiManager;
 String local_ip ="1.1.1.1";
 String last_payload = "";
 String payload = "";
+
 
 void report_water_level();
 void printDebug();
@@ -153,9 +156,12 @@ void loop() {
     
   	ArduinoOTA.handle();
   	
-ping_time = sonar.ping_median(5,EMPTY_TANK_DISTANCE);
-//pcm = sonar.ping_cm(EMPTY_TANK_DISTANCE);
-distance_cm = sonar.convert_cm(ping_time);
+//ping_time = sonar.ping_median(5,EMPTY_TANK_DISTANCE);
+pcm = sonar.ping_cm(EMPTY_TANK_DISTANCE);
+samples.add(pcm);
+//distance_cm = sonar.convert_cm(ping_time);
+distance_cm = samples.getMedian();
+
 //percent_full = map(distance_cm, EMPTY_TANK_DISTANCE, FULL_TANK_DISTANCE, 0.0, 100.0);
 delta = abs(value-distance_cm);
 read_switch_pin();
