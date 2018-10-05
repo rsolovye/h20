@@ -40,7 +40,7 @@
 #define MEDIAN_MIN_SIZE     1
 #endif
 #ifndef MEDIAN_MAX_SIZE
-#define MEDIAN_MAX_SIZE     19          // adjust if needed
+#define MEDIAN_MAX_SIZE     49          // adjust if needed
 #endif
 
 

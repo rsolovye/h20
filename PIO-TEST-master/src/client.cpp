@@ -26,7 +26,7 @@
 #define SWITCH_PIN 5
 #define MAX_DELTA 10
 #define LED_PIN 2
-
+#define MEDIAN_MAX_SIZE 49
 String host_souyuz = "http://soyuz.teatrtogo.ru/";
 
 unsigned long FULL_TANK_DISTANCE = 20.0;
@@ -62,7 +62,7 @@ String local_ip ="1.1.1.1";
 String last_payload = "";
 String payload = "";
 bool calibrated = false;
-const int DELTA_OUTLIER = 30; 
+const int DELTA_OUTLIERS = 30; 
 
 void report_water_level();
 void printDebug();
@@ -159,6 +159,7 @@ void loop() {
     
   	ArduinoOTA.handle();
   	read_switch_pin();
+
 //  	
 //if (calibrated==false){
 //    RunningMedian first_value = RunningMedian(5);
@@ -182,6 +183,7 @@ if (ping_interval < (current_ping_time - last_ping_time) )
 {
     last_ping_time = current_ping_time;
      pcm = sonar.ping_cm(EMPTY_TANK_DISTANCE);
+if (abs(value-pcm)<DELTA_OUTLIERS);
      samples.add(pcm);
 }
 
@@ -189,16 +191,25 @@ if (ping_interval < (current_ping_time - last_ping_time) )
     if (samples.getCount() == MEDIAN_MAX_SIZE)
         { distance_cm = samples.getAverage(5);
           delta = abs(value-distance_cm);
+	
+	if (!calibrated){
+	 value = samples.getHighest();
+    printToTelnet();
+    report_water_level();
+calibrated = true;
 
+}
+else{
 if (delta>MAX_DELTA || report_interval < (current_ping_time - last_report_time)){
     last_report_time = current_ping_time;
     value = distance_cm;
     printToTelnet();
     report_water_level();
 }
+samples.clear();
 }
 valve_control();
-//delay(100);
+}//delay(100);
 
 }
 
