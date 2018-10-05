@@ -206,8 +206,9 @@ if (delta>MAX_DELTA || report_interval < (current_ping_time - last_report_time))
     printToTelnet();
     report_water_level();
 }
-samples.clear();
+
 }
+samples.clear();
 valve_control();
 }//delay(100);
 
