@@ -82,8 +82,8 @@ close_valve();
 
 
   wifi_config_ap();
-//  TelnetServer.begin();
-//  TelnetServer.setNoDelay(true);
+  TelnetServer.begin();
+  TelnetServer.setNoDelay(true);
 
   ota_setup();
 
@@ -161,7 +161,7 @@ pcm = sonar.ping_cm(EMPTY_TANK_DISTANCE);
 samples.add(pcm);
 //distance_cm = sonar.convert_cm(ping_time);
 distance_cm = samples.getMedian();
-
+printToTelnet();
 //percent_full = map(distance_cm, EMPTY_TANK_DISTANCE, FULL_TANK_DISTANCE, 0.0, 100.0);
 delta = abs(value-distance_cm);
 read_switch_pin();
@@ -357,12 +357,19 @@ void printToTelnet(){
 //g+= " gpio_5: ";
 //g+= switch_pin_state;
 //g+="\n";
+//String m=value;
+//m+= ": ";m += samples.getLowest();m +=   " ";m += samples.getMedian();m +=   " ";m +=    samples.getHighest();
+ if (!Telnet) {  // otherwise it works only once
+        Telnet = TelnetServer.available();
+ }
+       	if (Telnet.connected()) {
+      Telnet.println(value);
 
-// if (!Telnet) {  // otherwise it works only once
-//        Telnet = TelnetServer.available();
-// }
-//       	if (Telnet.connected()) {
-//    Telnet.println(g);
-//	}  
+    Telnet.println(samples.getLowest());
+      Telnet.println(samples.getLowest());
+  Telnet.println(samples.getLowest());
+  Telnet.println("----");
+
+	}  
 
 }
