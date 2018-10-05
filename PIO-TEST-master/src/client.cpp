@@ -165,6 +165,7 @@ if (calibrated==false){
         delay(50);
     }
     value = first_value.getHighest();
+    calibrated = true;
 }  	
 //ping_time = sonar.ping_median(5,EMPTY_TANK_DISTANCE);
 else 
